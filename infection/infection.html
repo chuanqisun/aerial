@@ -1,94 +1,51 @@
 <!DOCTYPE html>
-<meta charset="utf-8">
-<style>
+<html>
+  <head>
+		<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+		<title>Self Organizing Maps</title>
+		
+		<script type="text/javascript" src="http://d3js.org/d3.v3.js"></script>
+		<script type="text/javascript" src="http://d3js.org/d3.hexbin.v0.min.js"></script>	
+		<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.3/jquery.js"></script>
 
-.axis text {
-  font: 10px sans-serif;
-}
+		<style type="text/css">
+			body {
+				margin: 0px; 
+				overflow: hidden; 
+				font-family: "Helvetica Neue", Helvetica; 
+				font-size: 14px;
+			}
 
-.axis path,
-.axis line {
-  fill: none;
-  stroke: #000;
-  shape-rendering: crispEdges;
-}
+			.header {
+				margin-top: 20px;
+				margin-left: 20px;
+				font-size: 36px; 
+				font-weight: 300; 
+				display: block; 
+				z-index: 1; 
+				text-shadow: 0 1px 0 #fff;
+			}
+			.hint {
+				width: 1280px; 
+				right: 0px; 
+				color: rgb(153, 153, 153); 
+				font-size: 12px;
+				padding-bottom: 20px;
+			}
 
-.hexagon {
-  fill: none;
-  stroke: #000;
-  stroke-width: .5px;
-}
+			.hr-style {
+			   border: 0;
+			   height: 2px;
+			   width: 80%;
+			   color: #E8E8E8;
+			   background-color: #E8E8E8;
+			}
+		</style>
+	</head>
+	<body>
+		<div id="chart"></div>
+		
+		<script type="text/javascript" src="script.js"></script>
 
-</style>
-<body>
-<script src="http://d3js.org/d3.v3.min.js"></script>
-<script src="http://d3js.org/d3.hexbin.v0.min.js?5c6e4f0"></script>
-<script>
-
-var margin = {top: 20, right: 20, bottom: 30, left: 40},
-    width = 960 - margin.left - margin.right,
-    height = 500 - margin.top - margin.bottom;
-
-var randomX = d3.random.normal(width / 2, 80),
-    randomY = d3.random.normal(height / 2, 80),
-    points = d3.range(2000).map(function() { return [randomX(), randomY()]; });
-
-var color = d3.scale.linear()
-    .domain([0, 20])
-    .range(["white", "steelblue"])
-    .interpolate(d3.interpolateLab);
-
-var hexbin = d3.hexbin()
-    .size([width, height])
-    .radius(20);
-
-var x = d3.scale.identity()
-    .domain([0, width]);
-
-var y = d3.scale.linear()
-    .domain([0, height])
-    .range([height, 0]);
-
-var xAxis = d3.svg.axis()
-    .scale(x)
-    .orient("bottom")
-    .tickSize(6, -height);
-
-var yAxis = d3.svg.axis()
-    .scale(y)
-    .orient("left")
-    .tickSize(6, -width);
-
-var svg = d3.select("body").append("svg")
-    .attr("width", width + margin.left + margin.right)
-    .attr("height", height + margin.top + margin.bottom)
-  .append("g")
-    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
-svg.append("clipPath")
-    .attr("id", "clip")
-  .append("rect")
-    .attr("class", "mesh")
-    .attr("width", width)
-    .attr("height", height);
-
-svg.append("g")
-    .attr("clip-path", "url(#clip)")
-  .selectAll(".hexagon")
-    .data(hexbin(points))
-  .enter().append("path")
-    .attr("class", "hexagon")
-    .attr("d", hexbin.hexagon())
-    .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; })
-    .style("fill", function(d) { return color(d.length); });
-
-svg.append("g")
-    .attr("class", "y axis")
-    .call(yAxis);
-
-svg.append("g")
-    .attr("class", "x axis")
-    .attr("transform", "translate(0," + height + ")")
-    .call(xAxis);
-
-</script>
+	</body>
+</html>

@@ -30,13 +30,9 @@ function moud(d) {
   console.dir(d);
 };
 
-var margin = {top: 20, right: 20, bottom: 30, left: 40},
-    width = 960 - margin.left - margin.right,
-    height = 500 - margin.top - margin.bottom;
-
-var randomX = d3.random.normal(width / 2, 100),
-    randomY = d3.random.normal(height / 2, 100),
-    points = d3.range(2000).map(function() { return [randomX(), randomY()]; });
+var margin = {top: 20, right: 20, bottom: 20, left: 20},
+    width = 600 - margin.left - margin.right,
+    height = 600 - margin.top - margin.bottom;
 
 var color = d3.scale.sqrt()
     .domain([0, 20])
@@ -74,9 +70,9 @@ svg.selectAll(".hexagon")
 
 
 function evolve(){
-    randomX = d3.random.normal(width / 2, 100),
-    randomY = d3.random.normal(height / 2, 100),
-    points = d3.range(2000).map(function() { return [randomX(), randomY()]; });
+    var randomX = d3.random.normal(width / 2, 60),
+        randomY = d3.random.normal(height / 2, 60),
+        points = d3.range(2000).map(function() { return [randomX(), randomY()]; });
 
     var hexagons = canvas.attr("clip-path", "url(#clip)")
       .selectAll(".hexagon")
@@ -93,7 +89,7 @@ function evolve(){
         
         .transition()
           .duration(1000)
-        .style("fill", function(d) { return color(0); });
+        .style("fill", function(d) { return color(d.length); });
    
       //update
       hexagons.transition()

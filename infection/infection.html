@@ -1,51 +1,113 @@
 <!DOCTYPE html>
-<html>
-  <head>
-		<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
-		<title>Self Organizing Maps</title>
-		
-		<script type="text/javascript" src="http://d3js.org/d3.v3.js"></script>
-		<script type="text/javascript" src="http://d3js.org/d3.hexbin.v0.min.js"></script>	
-		<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.3/jquery.js"></script>
+<meta charset="utf-8">
+<style>
 
-		<style type="text/css">
-			body {
-				margin: 0px; 
-				overflow: hidden; 
-				font-family: "Helvetica Neue", Helvetica; 
-				font-size: 14px;
-			}
+.axis text {
+  font: 10px sans-serif;
+}
 
-			.header {
-				margin-top: 20px;
-				margin-left: 20px;
-				font-size: 36px; 
-				font-weight: 300; 
-				display: block; 
-				z-index: 1; 
-				text-shadow: 0 1px 0 #fff;
-			}
-			.hint {
-				width: 1280px; 
-				right: 0px; 
-				color: rgb(153, 153, 153); 
-				font-size: 12px;
-				padding-bottom: 20px;
-			}
+.axis path,
+.axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
 
-			.hr-style {
-			   border: 0;
-			   height: 2px;
-			   width: 80%;
-			   color: #E8E8E8;
-			   background-color: #E8E8E8;
-			}
-		</style>
-	</head>
-	<body>
-		<div id="chart"></div>
-		
-		<script type="text/javascript" src="script.js"></script>
+.hexagon {
+  fill: none;
+  stroke: #fff;
+  stroke-width: 1px;
+}
 
-	</body>
-</html>
+</style>
+<body>
+<script src="http://d3js.org/d3.v3.min.js"></script>
+<script src="http://d3js.org/d3.hexbin.v0.min.js?5c6e4f0"></script>
+<script>
+
+//Mousedown
+function moud(d) {
+  console.dir(d);
+};
+
+var margin = {top: 20, right: 20, bottom: 30, left: 40},
+    width = 960 - margin.left - margin.right,
+    height = 500 - margin.top - margin.bottom;
+
+var randomX = d3.random.normal(width / 2, 100),
+    randomY = d3.random.normal(height / 2, 100),
+    points = d3.range(2000).map(function() { return [randomX(), randomY()]; });
+
+var color = d3.scale.sqrt()
+    .domain([0, 20])
+    .range(["white", "orangered"])
+    .interpolate(d3.interpolateLab);
+
+var hexbin = d3.hexbin()
+    .size([width, height])
+    .radius(20);
+
+var svg = d3.select("body").append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+  .append("g")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+svg.append("clipPath")
+    .attr("id", "clip")
+  .append("rect")
+    .attr("class", "mesh")
+    .attr("width", width)
+    .attr("height", height);
+
+var canvas = svg.append("g");
+    
+canvas.attr("clip-path", "url(#clip)");
+  
+
+setInterval(evolve, 1000);
+
+
+
+svg.selectAll(".hexagon")
+  .style("fill", function(d) { return color(d.length); })
+
+
+function evolve(){
+    randomX = d3.random.normal(width / 2, 100),
+    randomY = d3.random.normal(height / 2, 100),
+    points = d3.range(2000).map(function() { return [randomX(), randomY()]; });
+
+    var hexagons = canvas.attr("clip-path", "url(#clip)")
+      .selectAll(".hexagon")
+        .data(hexbin(points));
+
+      //enter
+      hexagons.enter().append("path")
+        .attr("class", "hexagon")
+        .attr("d", hexbin.hexagon())
+        .attr("stroke-width", "0px")
+        .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; })
+        .on("mousedown",moud) 
+        .style("fill", function(d) { return color(0); })
+        
+        .transition()
+          .duration(1000)
+        .style("fill", function(d) { return color(0); });
+   
+      //update
+      hexagons.transition()
+        .duration(1000)
+      .style("fill", function(d) { return color(d.length); });
+
+      //exit
+      hexagons.exit()
+        .transition()
+          .duration(1000)
+        .style("fill", function(d) { return color(0); })
+        .remove();
+
+
+}
+
+</script>

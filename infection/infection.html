@@ -2,6 +2,10 @@
 <meta charset="utf-8">
 <style>
 
+#svg_frame {
+  text-align: center;
+}
+
 .axis text {
   font: 10px sans-serif;
 }
@@ -21,6 +25,9 @@
 
 </style>
 <body>
+<div id="svg_frame">
+</div>
+</body>
 <script src="http://d3js.org/d3.v3.min.js"></script>
 <script src="http://d3js.org/d3.hexbin.v0.min.js?5c6e4f0"></script>
 <script>
@@ -30,49 +37,43 @@ function moud(d) {
   console.dir(d);
 };
 
-var margin = {top: 20, right: 20, bottom: 20, left: 20},
-    width = 600 - margin.left - margin.right,
-    height = 600 - margin.top - margin.bottom;
+function generateMeshPoints() {
+  var points = [];
+  for (var i = 1; i < MapRows; i++) {
+    for (var j = 1; j < MapColumns; j++) {
+      points.push([hexRadius * j * 1.75, hexRadius * i * 1.5]);
+    }
+  }
 
-var color = d3.scale.sqrt()
-    .domain([0, 20])
-    .range(["white", "orangered"])
-    .interpolate(d3.interpolateLab);
+  return points;
+}
 
-var hexbin = d3.hexbin()
-    .size([width, height])
-    .radius(20);
+function setCore(x,y,d) {
+  randomX = d3.random.normal(x, d),
+  randomY = d3.random.normal(y, d);
+}
 
-var svg = d3.select("body").append("svg")
-    .attr("width", width + margin.left + margin.right)
-    .attr("height", height + margin.top + margin.bottom)
-  .append("g")
-    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+function random2dSample() {
 
-svg.append("clipPath")
-    .attr("id", "clip")
-  .append("rect")
-    .attr("class", "mesh")
-    .attr("width", width)
-    .attr("height", height);
-
-var canvas = svg.append("g");
-    
-canvas.attr("clip-path", "url(#clip)");
+  var x = Math.max(randomX(), hexRadius * 1.75);
+  x = Math.min(x, hexRadius * (MapColumns - 1) * 1.75);
   
+  var y = Math.max(randomY(), hexRadius * 1.5);
+  y = Math.min(y, hexRadius * (MapRows - 1) * 1.5);
 
-setInterval(evolve, 1000);
-
-
-
-svg.selectAll(".hexagon")
-  .style("fill", function(d) { return color(d.length); })
-
+  return [x, y];
+}
 
 function evolve(){
-    var randomX = d3.random.normal(width / 2, 60),
-        randomY = d3.random.normal(height / 2, 60),
-        points = d3.range(2000).map(function() { return [randomX(), randomY()]; });
+    setCore(width / 2, height / 2, 80);
+    var coreX = randomX(),
+        coreY = randomY();
+    setCore(coreX, coreY, 80);
+   
+    var meshPoints = points.slice(0,meshCellPopulation);
+    var agingPoints = points.slice(meshCellPopulation, dynamicCellPopulation - youngCellPopulation + meshCellPopulation);
+    var youngPoints = d3.range(youngCellPopulation).map(random2dSample);
+    points = meshPoints.concat(youngPoints).concat(agingPoints);
 
     var hexagons = canvas.attr("clip-path", "url(#clip)")
       .selectAll(".hexagon")
@@ -94,6 +95,7 @@ function evolve(){
       //update
       hexagons.transition()
         .duration(1000)
+      .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; })
       .style("fill", function(d) { return color(d.length); });
 
       //exit
@@ -102,8 +104,59 @@ function evolve(){
           .duration(1000)
         .style("fill", function(d) { return color(0); })
         .remove();
-
-
 }
+
+var dynamicCellPopulation = 2000,
+    youngCellPopulation = 700;
+
+var margin = {top: 20, right: 20, bottom: 20, left: 20},
+    width = 600,
+    height = 600;
+
+//The number of columns and rows of the heatmap
+var MapColumns = 20,
+    MapRows = 20;
+ 
+//The maximum radius the hexagons can have to still fit the screen
+var hexRadius = d3.min([width/((MapColumns + 0.5) * Math.sqrt(3)),
+   height/((MapRows + 1/3) * 1.5)]);
+
+var color = d3.scale.sqrt()
+    .domain([0, 20])
+    .range(["white", "orangered"])
+    .interpolate(d3.interpolateLab);
+
+var hexbin = d3.hexbin()
+    .size([width, height])
+    .radius(hexRadius);
+
+var svg = d3.select("#svg_frame").append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+  .append("g")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+svg.append("clipPath")
+    .attr("id", "clip")
+  .append("rect")
+    .attr("class", "mesh")
+    .attr("width", width)
+    .attr("height", height);
+
+var canvas = svg.append("g");
+canvas.attr("clip-path", "url(#clip)");
+
+// initial generation
+var randomX,
+    randomY,
+    points,
+    bazeSize;
+
+setCore(width / 2, height / 2, 80);
+points = generateMeshPoints();
+meshCellPopulation = points.length;
+points = points.concat(d3.range(dynamicCellPopulation).map(random2dSample));
+
+setInterval(evolve, 1000);
 
 </script>
